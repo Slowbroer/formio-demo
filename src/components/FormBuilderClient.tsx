@@ -2,6 +2,7 @@
 
 import { Form, type FormType, FormBuilder } from "@formio/react";
 import { useMemo, useState } from "react";
+import { FormioUrlFileService } from "@/lib/formioUrlFileService";
 
 const EMPTY_FORM: FormType = {
   display: "form",
@@ -16,10 +17,14 @@ export default function FormBuilderClient() {
 
   // Keep initialForm stable to avoid builder re-instantiation.
   const initialForm = useMemo(() => EMPTY_FORM, []);
+  const fileService = useMemo(
+    () => new FormioUrlFileService("/api/formio/upload"),
+    [],
+  );
 
   return (
     <div className="min-h-dvh bg-zinc-50 text-zinc-900">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-4 px-4 py-6">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight">
             Form Builder (Form.io)
@@ -70,8 +75,7 @@ export default function FormBuilderClient() {
               <Form
                 src={schema}
                 options={{
-                  fileService: "url",
-                  uploadUrl: "/api/formio/upload",
+                  fileService,
                 }}
               />
             </div>

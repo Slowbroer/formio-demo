@@ -1,28 +1,50 @@
 services:
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: mysql://app:app@mysql:3306/app
+    depends_on:
+      - mysql
+    restart: "no"
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner
     environment:
       NODE_ENV: production
       PORT: "3000"
-      # App doesn't use SQLite yet, but this is the shared DB file path.
-      SQLITE_DB_PATH: /data/app.db
+      DATABASE_URL: mysql://app:app@mysql:3306/app
+      UPLOADS_DIR: /app/uploads
     ports:
       - "3000:3000"
     volumes:
-      - sqlite_data:/data
+      - uploads_data:/app/uploads
     depends_on:
-      - sqlite
+      - mysql
 
-  # SQLite isn't a server; this container exists to manage/inspect the DB file
-  # and to satisfy "at least contain a sqlite database" in compose.
-  sqlite:
-    image: keinos/sqlite3:latest
-    command: ["sh", "-lc", "mkdir -p /data && touch /data/app.db && tail -f /dev/null"]
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
     volumes:
-      - sqlite_data:/data
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
 
 volumes:
-  sqlite_data:
+  mysql_data:
+  uploads_data:
 
