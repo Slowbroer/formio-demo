@@ -1,0 +1,28 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # App doesn't use SQLite yet, but this is the shared DB file path.
+      SQLITE_DB_PATH: /data/app.db
+    ports:
+      - "3000:3000"
+    volumes:
+      - sqlite_data:/data
+    depends_on:
+      - sqlite
+
+  # SQLite isn't a server; this container exists to manage/inspect the DB file
+  # and to satisfy "at least contain a sqlite database" in compose.
+  sqlite:
+    image: keinos/sqlite3:latest
+    command: ["sh", "-lc", "mkdir -p /data && touch /data/app.db && tail -f /dev/null"]
+    volumes:
+      - sqlite_data:/data
+
+volumes:
+  sqlite_data:
+
