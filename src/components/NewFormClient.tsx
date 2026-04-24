@@ -33,7 +33,7 @@ export default function NewFormClient() {
       });
       const data = (await res.json()) as { id?: string; error?: string };
       if (!res.ok || !data.id) throw new Error(data.error ?? "Failed to create");
-      router.push(`/forms/${data.id}/edit`);
+      router.push(`/forms/${data.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create");
     } finally {
