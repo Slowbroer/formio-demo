@@ -4,11 +4,38 @@
 
 - Node `20.19.0` (see `.nvmrc`)
 
-## Run locally
+## Run locally (recommended)
+
+You need a MySQL database. The easiest way is to start the compose MySQL service, then run Next.js on your host.
+
+### 1) Start MySQL
+
+```bash
+docker compose up -d mysql
+```
+
+### 2) Install deps + run the app
 
 ```bash
 npm install
 npm run dev
+```
+
+### 3) Set DB env (if needed)
+
+By default the app will connect to:
+
+- `mysql://app:app@127.0.0.1:3306/app`
+
+If you use different credentials, set either:
+
+- `DATABASE_URL`, or
+- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
+
+### 4) Run DB migrations (first time)
+
+```bash
+npx prisma migrate dev
 ```
 
 Open `http://localhost:3000`.
@@ -90,4 +117,4 @@ This app uses [`@formio/react`](https://github.com/formio/react) as the form bui
 
 - **Route**: `POST /api/formio/upload`
 - **Body**: `multipart/form-data` with a `file` field
-- **Behavior**: saves to `public/uploads/` (local dev) and returns a JSON payload containing a `url`.
+- **Behavior**: saves to `UPLOADS_DIR` (defaults to `./uploads/`) and returns a JSON payload containing an accessible `url`.
