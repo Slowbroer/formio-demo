@@ -15,8 +15,6 @@ npm install
 cp .env.example .env
 ```
 
-
-
 ### 2) Set DB env (optional)
 
 By default the app will use a local SQLite file:
