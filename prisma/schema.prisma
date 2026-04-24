@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model FormDefinition {
+  id         String        @id
+  name       String
+  definition Json
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  submits    FormSubmit[]
+
+  @@map("form_definitions")
+}
+
+model FormSubmit {
+  id               String         @id
+  formDefinitionId String        @map("form_definition_id")
+  submission       Json
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  formDefinition  FormDefinition @relation(fields: [formDefinitionId], references: [id], onDelete: Cascade)
+
+  @@index([formDefinitionId, createdAt])
+  @@map("form_submits")
+}
+

@@ -20,7 +20,9 @@ export async function POST(req: Request) {
     );
   }
 
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
+  const uploadsDir =
+    process.env.UPLOADS_DIR?.trim() ||
+    path.join(/* turbopackIgnore: true */ process.cwd(), "uploads");
   await mkdir(uploadsDir, { recursive: true });
 
   const ext = path.extname(file.name || "");
@@ -30,19 +32,15 @@ export async function POST(req: Request) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   await writeFile(path.join(uploadsDir, filename), bytes);
 
-  // Form.io File component expects a response that includes URL information.
-  // Returning both 'url' and 'data' helps cover common adapter expectations.
-  const url = `/uploads/${filename}`;
+  // Serve via our GET route so it's always accessible (including Docker),
+  // regardless of whether the app can write into `public/`.
+  const relativeUrl = `/api/formio/upload/${encodeURIComponent(filename)}`;
+  const absoluteUrl = new URL(relativeUrl, "http://localhost:3000").toString();
 
   return NextResponse.json({
-    url,
-    data: {
-      url,
-      name: file.name,
-      originalName: file.name,
-      size: file.size,
-      type: file.type,
-    },
+    url: absoluteUrl,
+    name: file.name,
+    size: file.size,
   });
 }
 

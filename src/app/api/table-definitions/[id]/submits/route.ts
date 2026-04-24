@@ -1,0 +1,3 @@
+export const runtime = "nodejs";
+export { GET, POST } from "@/app/api/form-definitions/[id]/submits/route";
+
