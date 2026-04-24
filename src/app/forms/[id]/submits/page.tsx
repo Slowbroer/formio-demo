@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import FormSubmitsListClient from "@/components/FormSubmitsListClient";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,19 @@ export default async function FormSubmitsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const def = await prisma.formDefinition.findUnique({
+    where: { id },
+    select: { definition: true },
+  });
+
+  if (!def) {
+    return (
+      <div className="mx-auto w-full max-w-screen-2xl px-4 py-8">
+        <div className="rounded-md border border-zinc-200 bg-white p-4">Not found.</div>
+      </div>
+    );
+  }
+
   const submits = await prisma.formSubmit.findMany({
     where: { formDefinitionId: id },
     orderBy: { createdAt: "desc" },
@@ -31,26 +45,13 @@ export default async function FormSubmitsPage({
         </Link>
       </div>
 
-      <div className="rounded-xl border border-zinc-200 bg-white">
-        <ul className="divide-y divide-zinc-200">
-          {submits.map((s) => (
-            <li key={s.id} className="p-4">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div className="text-sm font-medium">{s.id}</div>
-                <div className="text-xs text-zinc-500">
-                  {new Date(s.createdAt).toLocaleString()}
-                </div>
-              </div>
-              <pre className="max-h-[40dvh] overflow-auto rounded-lg bg-zinc-950 p-3 text-xs text-zinc-50">
-                {JSON.stringify(s.submission, null, 2)}
-              </pre>
-            </li>
-          ))}
-          {submits.length === 0 ? (
-            <li className="p-4 text-sm text-zinc-600">No submits for this form yet.</li>
-          ) : null}
-        </ul>
-      </div>
+      <FormSubmitsListClient
+        definition={def.definition as any}
+        submits={submits.map((s) => ({
+          ...s,
+          createdAt: s.createdAt.toISOString(),
+        }))}
+      />
     </div>
   );
 }
