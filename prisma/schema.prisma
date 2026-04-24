@@ -3,23 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-model Form {
-  id        String   @id @db.VarChar(36)
-  name      String   @db.VarChar(255)
-  schema    Json
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("forms")
-}
-
 model FormDefinition {
-  id         String        @id @db.VarChar(36)
-  name       String        @db.VarChar(255)
+  id         String        @id
+  name       String
   definition Json
   createdAt  DateTime      @default(now()) @map("created_at")
   updatedAt  DateTime      @updatedAt @map("updated_at")
@@ -29,8 +19,8 @@ model FormDefinition {
 }
 
 model FormSubmit {
-  id               String         @id @db.VarChar(36)
-  formDefinitionId String        @map("form_definition_id") @db.VarChar(36)
+  id               String         @id
+  formDefinitionId String        @map("form_definition_id")
   submission       Json
   createdAt        DateTime       @default(now()) @map("created_at")
 

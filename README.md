@@ -6,69 +6,58 @@
 
 ## Run locally (recommended)
 
-You need a MySQL database. The easiest way is to start the compose MySQL service, then run Next.js on your host.
+This app uses SQLite via Prisma. You don't need to run any database server.
 
-### 1) Start MySQL
-
-```bash
-docker compose up -d mysql
-```
-
-### 2) Install deps + run the app
+### 1) Install deps + run the app
 
 ```bash
 npm install
-npm run dev
+cp .env.example .env
 ```
 
-### 3) Set DB env (if needed)
 
-By default the app will connect to:
 
-- `mysql://app:app@127.0.0.1:3306/app`
+### 2) Set DB env (optional)
 
-If you use different credentials, set either:
+By default the app will use a local SQLite file:
 
-- `DATABASE_URL`, or
-- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
+- `file:./prisma/dev.db`
 
-### 4) Run DB migrations (first time)
+Prisma CLI reads `DATABASE_URL` from your shell or from `.env`. This repo includes a default `.env` with:
+
+- `DATABASE_URL="file:./prisma/dev.db"`
+
+To use a different SQLite location, set:
+
+- `DATABASE_URL` (example: `file:./data/dev.db`)
+
+### 3) Run DB migrations (first time)
 
 ```bash
-npx prisma migrate dev
+npx prisma migrate dev --name init
+```
+
+### 4) Run the app
+
+```bash
+npm run dev
 ```
 
 Open `http://localhost:3000`.
 
-## Docker Compose (app + MySQL)
-
-```bash
-docker compose up --build
-```
-
-- App: `http://localhost:3000`
-- MySQL: `localhost:3306` (database `app`, user `app`, password `app`)
-
-## DB configuration (MySQL)
+## DB configuration (SQLite)
 
 - **Env var**: `DATABASE_URL` (optional)
-  - If not set, the app falls back to `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`
-  - Defaults: `mysql://app:app@127.0.0.1:3306/app`
+  - Default: `file:./dev.db`
 - **Prisma**:
   - Schema: `prisma/schema.prisma`
-  - Migrations: `npx prisma migrate dev` (local) / `npx prisma migrate deploy` (Docker)
+  - Migrations: `npx prisma migrate dev` (local)
 
 ## DB migrations (Prisma)
 
 ### Create a new migration (local dev)
 
-1. Ensure MySQL is running (recommended):
-
-```bash
-docker compose up -d mysql
-```
-
-2. Set `DATABASE_URL` (or `MYSQL_*`) and run:
+1. Set `DATABASE_URL` (optional) and run:
 
 ```bash
 npx prisma migrate dev --name your_migration_name
@@ -79,25 +68,11 @@ This will:
 - apply it to your local DB
 - regenerate Prisma Client
 
-### Apply migrations (Docker / production)
-
-Docker Compose runs migrations via the `migrate` service:
-
-```bash
-docker compose up --build
-```
-
-Or run just migrations:
-
-```bash
-docker compose run --rm migrate
-```
-
 ### Reset DB (dev only, destructive)
 
 ```bash
-docker compose down -v
-docker compose up -d --build
+rm -f ./prisma/dev.db
+npx prisma migrate dev --name init
 ```
 - **API**:
   - `GET /api/form-definitions` lists definitions
@@ -106,8 +81,6 @@ docker compose up -d --build
   - `PUT /api/form-definitions/:id` edits: `{ name?, definition? }`
   - `GET /api/form-definitions/:id/submits` lists submits
   - `POST /api/form-definitions/:id/submits` creates submit: `{ submission }`
-  - `GET /api/forms` lists forms
-  - `POST /api/forms` upserts a form: `{ id?, name?, schema }`
 
 ## Form builder
 
