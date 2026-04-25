@@ -4,6 +4,12 @@
 
 - Node `20.19.0` (see `.nvmrc`)
 
+If you are using nvm, you can directly switch to this node version by running:
+
+```bash
+nvm use
+```
+
 ## Run locally (recommended)
 
 This app uses SQLite via Prisma. You don't need to run any database server.
