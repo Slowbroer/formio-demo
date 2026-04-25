@@ -14,7 +14,7 @@ nvm use
 
 This app uses SQLite via Prisma. You don't need to run any database server.
 
-### 1) Install deps + run the app
+### 1) Install deps
 
 ```bash
 npm install
