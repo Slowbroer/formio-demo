@@ -35,7 +35,8 @@ export async function POST(req: Request) {
   // Serve via our GET route so it's always accessible (including Docker),
   // regardless of whether the app can write into `public/`.
   const relativeUrl = `/api/formio/upload/${encodeURIComponent(filename)}`;
-  const absoluteUrl = new URL(relativeUrl, "http://localhost:3000").toString();
+  const { origin } = new URL(req.url);
+  const absoluteUrl = new URL(relativeUrl, origin).toString();
 
   return NextResponse.json({
     url: absoluteUrl,
