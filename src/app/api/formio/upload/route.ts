@@ -9,6 +9,21 @@ function sanitizeFilename(name: string) {
   return base.replace(/[^\w.\-() ]+/g, "_");
 }
 
+function getPublicOrigin(req: Request) {
+  // In production, this route is often behind a proxy (ALB/CloudFront/Vercel/etc).
+  // Prefer forwarded headers to construct a public-facing absolute URL.
+  const xfHost = req.headers.get("x-forwarded-host");
+  const xfProto = req.headers.get("x-forwarded-proto");
+  if (xfHost) {
+    const host = xfHost.split(",")[0]?.trim();
+    const proto = (xfProto?.split(",")[0]?.trim() || "https").toLowerCase();
+    if (host) return `${proto}://${host}`;
+  }
+
+  // Fallback: direct request origin (local dev, or no proxy headers).
+  return new URL(req.url).origin;
+}
+
 export async function POST(req: Request) {
   const formData = await req.formData();
   const file = formData.get("file");
@@ -35,8 +50,7 @@ export async function POST(req: Request) {
   // Serve via our GET route so it's always accessible (including Docker),
   // regardless of whether the app can write into `public/`.
   const relativeUrl = `/api/formio/upload/${encodeURIComponent(filename)}`;
-  const { origin } = new URL(req.url);
-  const absoluteUrl = new URL(relativeUrl, origin).toString();
+  const absoluteUrl = new URL(relativeUrl, getPublicOrigin(req)).toString();
 
   return NextResponse.json({
     url: absoluteUrl,
